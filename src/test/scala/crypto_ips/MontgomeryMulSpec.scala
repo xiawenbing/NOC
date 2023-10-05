@@ -6,7 +6,7 @@ import org.scalatest.freespec.AnyFreeSpec
 
 class MontgomeryMulSpec extends AnyFreeSpec with ChiselScalatestTester {
   "Montgomery Multiplier should multiply" /* taggedAs RequiresVerilator */ in {
-    test(new MontgomeryMul(32)).withAnnotations(Seq(/* VerilatorBackendAnnotation,  */WriteVcdAnnotation)) { dut =>
+    test(new MontgomeryMul(256)).withAnnotations(Seq(/* VerilatorBackendAnnotation,  */WriteVcdAnnotation)) { dut =>
       dut.clock.step(3)
       val x = 202
       val y = 236
@@ -39,7 +39,7 @@ class MontgomeryMulSpec extends AnyFreeSpec with ChiselScalatestTester {
         println(s"TEST PASS | xy mod m = $xy")
       else
         println(s"TEST FAILD | hardware: $xy, result: ${(x * y) % m}")
-      // getMP(x, y)
+      // println(s"getMP: ${getMP(x, y)}")
     }
   }
 }
