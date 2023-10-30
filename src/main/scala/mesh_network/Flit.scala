@@ -15,7 +15,7 @@ class FlitHeader extends Bundle {
   val vc_id = UInt(log2Ceil(NetworkConfig.virtual_channels).W)
 }
 
-class FlitLoad extends Bundle
+abstract class FlitLoad extends Bundle
 
 class HeadFlitLoad extends FlitLoad {
   val source = new Coordinate

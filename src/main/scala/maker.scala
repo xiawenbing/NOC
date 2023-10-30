@@ -5,8 +5,6 @@ import chisel3._
 import crypto_ips._
 import exampleIPs._
 import interfaces._
-import Tesla._
-import interfaces.Router.DecoderSTM
 import mesh_network._
 
 object Main extends App {
@@ -24,7 +22,7 @@ object Main extends App {
   // emitVerilog(new Counter(4), Array("--target-dir", "generated"))
   // emitVerilog(new BOUMonMul, Array("--target-dir", "generated"))
   // emitVerilog(new DecoderSTM, Array("--target-dir", "generated"))
-  emitVerilog(new MonMulAXI, Array("--target-dir", "generated"))
+  emitVerilog(new Granter(5), Array("--target-dir", "generated"))
   // emitVerilog(new InputBuffers, Array("--target-dir", "generated"))
   // emitVerilog(new VirtualChannelQ, Array("--target-dir", "generated"))
   // emitVerilog(new Router(1, 1), Array("--target-dir", "generated"))

@@ -20,7 +20,6 @@ class NetworkExampleTop extends Module {
     val feed1 = Value
     val feed2 = Value
     val feed3 = Value
-    val feed4 = Value
     val ending = Value
   }
   import state._
@@ -58,8 +57,28 @@ class NetworkExampleTop extends Module {
       load1.data := BigInt("F00D11A", 16).U
       network.io.local00.flit_in.bits.load := load1.asTypeOf(UInt(flit_load_width.W))
 
+      STM := feed2
+    }
+    is(feed2) {
+      network.io.local00.flit_in.valid := true.B
+      network.io.local00.flit_in.bits.header.flit_type := FlitTypes.body
+      network.io.local00.flit_in.bits.header.vc_id := 1.U
+      val load1 = Wire(new DataFlitLoad)
+      load1.data := BigInt("F00D11B", 16).U
+      network.io.local00.flit_in.bits.load := load1.asTypeOf(UInt(flit_load_width.W))
+     
+      STM := feed3
+    }
+    is(feed3) {
+      network.io.local00.flit_in.valid := true.B
+      network.io.local00.flit_in.bits.header.flit_type := FlitTypes.tail
+      network.io.local00.flit_in.bits.header.vc_id := 1.U
+      val load1 = Wire(new DataFlitLoad)
+      load1.data := BigInt("F00D11C", 16).U
+      network.io.local00.flit_in.bits.load := load1.asTypeOf(UInt(flit_load_width.W))
+
       network.io.local10.flit_in.valid := true.B
-      network.io.local10.flit_in.bits.header.flit_type := FlitTypes.head
+      network.io.local10.flit_in.bits.header.flit_type := FlitTypes.single
       network.io.local10.flit_in.bits.header.vc_id := 1.U
       val load2 = Wire(new HeadFlitLoad)
       load2.source.x := 1.U
@@ -68,70 +87,6 @@ class NetworkExampleTop extends Module {
       load2.dest.y := 1.U
       load2.data := BigInt("F10D11A", 16).U
       network.io.local10.flit_in.bits.load := load2.asTypeOf(UInt(flit_load_width.W))
-
-      STM := feed2
-    }
-    is(feed2) {
-      network.io.local00.flit_in.valid := true.B
-      network.io.local00.flit_in.bits.header.flit_type := FlitTypes.body
-      network.io.local00.flit_in.bits.header.vc_id := 1.U
-      val load1 = Wire(new HeadFlitLoad)
-      load1.source.x := 0.U
-      load1.source.y := 0.U
-      load1.dest.x := 1.U
-      load1.dest.y := 1.U
-      load1.data := BigInt("F00D11B", 16).U
-      network.io.local00.flit_in.bits.load := load1.asTypeOf(UInt(flit_load_width.W))
-
-      network.io.local10.flit_in.valid := true.B
-      network.io.local10.flit_in.bits.header.flit_type := FlitTypes.body
-      network.io.local10.flit_in.bits.header.vc_id := 1.U
-      val load2 = Wire(new HeadFlitLoad)
-      load2.source.x := 1.U
-      load2.source.y := 0.U
-      load2.dest.x := 1.U
-      load2.dest.y := 1.U
-      load2.data := BigInt("F10D11B", 16).U
-      network.io.local10.flit_in.bits.load := load2.asTypeOf(UInt(flit_load_width.W))
-
-      STM := feed3
-    }
-    is(feed3) {
-      network.io.local00.flit_in.valid := true.B
-      network.io.local00.flit_in.bits.header.flit_type := FlitTypes.tail
-      network.io.local00.flit_in.bits.header.vc_id := 1.U
-      val load1 = Wire(new HeadFlitLoad)
-      load1.source.x := 0.U
-      load1.source.y := 0.U
-      load1.dest.x := 1.U
-      load1.dest.y := 1.U
-      load1.data := BigInt("F00D11C", 16).U
-      network.io.local00.flit_in.bits.load := load1.asTypeOf(UInt(flit_load_width.W))
-
-      network.io.local10.flit_in.valid := true.B
-      network.io.local10.flit_in.bits.header.flit_type := FlitTypes.tail
-      network.io.local10.flit_in.bits.header.vc_id := 1.U
-      val load2 = Wire(new HeadFlitLoad)
-      load2.source.x := 1.U
-      load2.source.y := 0.U
-      load2.dest.x := 1.U
-      load2.dest.y := 1.U
-      load2.data := BigInt("F10D11C", 16).U
-      network.io.local10.flit_in.bits.load := load2.asTypeOf(UInt(flit_load_width.W))
-
-      STM := feed4
-    }
-    is(feed4) {
-      network.io.local01.flit_in.valid := true.B
-      network.io.local01.flit_in.bits.header.flit_type := FlitTypes.single
-      network.io.local01.flit_in.bits.header.vc_id := 1.U
-      val load3 = Wire(new HeadFlitLoad)
-      load3.source.x := 0.U
-      load3.source.y := 1.U
-      load3.dest.x := 1.U
-      load3.dest.y := 1.U
-      load3.data := BigInt("F01D11A", 16).U
-      network.io.local01.flit_in.bits.load := load3.asTypeOf(UInt(flit_load_width.W))
 
       STM := ending
     }

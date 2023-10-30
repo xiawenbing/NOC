@@ -5,7 +5,6 @@ import chisel3.util._
 
 class VirtualChannelState extends Bundle {
   import NetworkConfig._
-  // val work_state = VirtualChannelWorkingState()
   val target = RouteTarget()
   val output_vc = UInt(log2Ceil(virtual_channels).W)
 }
@@ -45,6 +44,8 @@ class Router(x: Int, y: Int) extends Module {
   val allPortsVec = Wire(Vec(5, new RouterPort))
   val inputBuffers = Seq.fill(5)(Module(new InputBuffers))
   val firstStageLogics = Seq.fill(5)(Module(new FirstStageLogic(x, y)))
+  val granters = Seq.fill(5)(Module(new Granter(5)))
+  val grantersWires = Wire(Vec(5, chiselTypeOf(granters(0).io)))
   val pipelineReg = Seq.fill(5)(RegInit(0.U.asTypeOf(new FlitAndValid)))
   val secondStageLogics = Seq.fill(5)(Module(new SecondStageLogic))
   val vcQueues = Seq.fill(5)(Module(new VirtualChannelQ))
@@ -54,9 +55,12 @@ class Router(x: Int, y: Int) extends Module {
   val tailJustLeave = Seq.fill(5)(RegInit(VecInit.fill(virtual_channels)(false.B)))
   val secondStageFire = WireInit(VecInit.fill(5)(false.B))
 
-  // A BIT OF DEFAULT VALUE
+  // placement
   allPortsVec.zip(Seq(io.north_port, io.south_port, io.west_port, io.east_port, io.local_port)).foreach{case(w, p) =>
     w <> p
+  }
+  grantersWires.zip(granters).foreach{case(w, g) =>
+    w <> g.io
   }
   vcQueuesWires.zip(vcQueues).foreach{case(w, m) => 
     w <> m.io
@@ -73,12 +77,24 @@ class Router(x: Int, y: Int) extends Module {
   inputBuffers.zip(firstStageLogics).foreach{case(b, fl) =>
     fl.io.in_flits <> b.io.out_flits
   }
+  // connect granters signal
+  grantersWires.zip(0 until 5).foreach{case(gw, i) =>
+    gw.request.zip(firstStageLogics).foreach{case(r, fl) =>
+      r := fl.io.winner_flit.valid &&
+           (fl.io.winner_flit.bits.header.flit_type === FlitTypes.head ||
+           fl.io.winner_flit.bits.header.flit_type === FlitTypes.single) &&
+           fl.io.winner_target.asUInt === i.U
+    }
+  }
   // connect first stage logic with pipeline registers
-  firstStageLogics.zip(pipelineReg).zip(vcStates).zip(secondStageFire).foreach{case(((fl, r), s), ssf) => 
-    fl.io.winner_flit.ready := !r.valid || ssf
+  firstStageLogics.zip(pipelineReg).zip(vcStates).zip(secondStageFire).zip(0 until 5).foreach{case((((fl, r), s), ssf), i) => 
+    fl.io.winner_flit.ready := (!r.valid || ssf) &&
+                               (!(fl.io.winner_flit.bits.header.flit_type === FlitTypes.head ||
+                                  fl.io.winner_flit.bits.header.flit_type === FlitTypes.single) ||
+                                grantersWires(fl.io.winner_target.asUInt).granted === i.U)
     when(fl.io.winner_flit.fire) {
       r.flit := fl.io.winner_flit.bits
-      r.flit.header.vc_id := s(fl.io.winner_vc).output_vc // update the vc field
+      r.flit.header.vc_id := s(fl.io.winner_vc).output_vc // update the vc_id field
       r.valid := true.B
       r.vc := fl.io.winner_vc
     }.otherwise {
@@ -109,8 +125,6 @@ class Router(x: Int, y: Int) extends Module {
       i.valid := (s(r.vc).target.asUInt === t.U) && r.valid
       i.bits := r.flit
       when(i.fire) {
-        // FIXME: this will cause an idle cycle in pipeline
-        // r.valid := false.B
         ssf := true.B
       }
     }

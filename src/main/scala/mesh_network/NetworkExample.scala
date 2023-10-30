@@ -15,6 +15,7 @@ import chisel3.util._
  */
 
 class NetworkExample extends Module {
+  // TODO: change NetworkExample's io to a collection
   import NetworkConfig._
   val io = IO(new Bundle{
     val local00 = new RouterPort

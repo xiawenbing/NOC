@@ -10,8 +10,7 @@ class FlitAndTarget extends Bundle {
 
 /*  First stage logic for all VCs of a input physical port.
     It is located right behind each input buffer.
-    It contains route compute, VC selection and 
-      switch allocation (1).
+    It contains route compute and switch allocation (1).
     It select the winner flit of switch allocation (1).
     `winner_target` is only meaningful when
     the winner is a head or single flit.

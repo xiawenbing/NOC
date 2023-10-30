@@ -37,9 +37,6 @@ class InputBuffers extends Module {
   val roomReg = RegInit(VecInit.fill(virtual_channels)(buffer_depth.U))
 
   io.in_flit <> deMux.io.in_flit
-  when(io.in_flit.fire) {
-    roomReg(io.in_flit.bits.header.vc_id) := roomReg(io.in_flit.bits.header.vc_id) - 1.U
-  }
   buffers.zip(io.out_flits).foreach{ case (b, o) =>
     b <> o
   }

@@ -6,13 +6,16 @@ import chisel3.util._
 object NetworkConfig {
   val rows = 2
   val columns = 2
-  val load_width = 96 // in bits
-  val addr_width = 12 
-  val data_length_width = 4
-  val data_width = addr_width + data_length_width // data = (addr + length)
+  val nodes = rows * columns
   val virtual_channels = 2
   val flit_load_width = 128
   val buffer_depth = 8
+
+  def idx2Coordinate(idx: Int): (Int, Int) = {
+    val x = idx / rows
+    val y = idx % rows
+    (x, y)
+  }
 }
 
 // the address of a router
