@@ -1,6 +1,6 @@
 .PHONY: clean clean-test clean-simu simu
 
-clean:
+clean-verilog:
 	rm -f ./generated/*
 
 clean-test:

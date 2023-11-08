@@ -22,9 +22,11 @@ object Main extends App {
   // emitVerilog(new Counter(4), Array("--target-dir", "generated"))
   // emitVerilog(new BOUMonMul, Array("--target-dir", "generated"))
   // emitVerilog(new DecoderSTM, Array("--target-dir", "generated"))
-  emitVerilog(new Granter(5), Array("--target-dir", "generated"))
+  // emitVerilog(new Granter(5), Array("--target-dir", "generated"))
   // emitVerilog(new InputBuffers, Array("--target-dir", "generated"))
   // emitVerilog(new VirtualChannelQ, Array("--target-dir", "generated"))
   // emitVerilog(new Router(1, 1), Array("--target-dir", "generated"))
-  // emitVerilog(new NetworkExample, Array("--target-dir", "generated"))
+  emitVerilog(new NetworkExample, Array("--target-dir", "generated"))
+  // emitVerilog(new NetworkInterface(1, 1), Array("--target-dir", "generated"))
+  // emitVerilog(new NetworkExampleWithNI, Array("--target-dir", "generated"))
 }

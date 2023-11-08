@@ -18,9 +18,14 @@ class FlitHeader extends Bundle {
 abstract class FlitLoad extends Bundle
 
 class HeadFlitLoad extends FlitLoad {
+  import NetworkConfig._
   val source = new Coordinate
   val dest = new Coordinate
-  val data = Bits((NetworkConfig.flit_load_width - source.getWidth - dest.getWidth).W)
+  val packet_type = UInt((PacketTypes.getWidth).W) // Use UInt instead of PacketTypes since sbt complains when casting from UInt to PacketTypes
+  val task_id = UInt(log2Ceil(SystemConfig.max_tasks).W)
+  def data_width: Int = flit_load_width - source.getWidth - 
+                        dest.getWidth - packet_type.getWidth - task_id.getWidth
+  val data = Bits(data_width.W) // this field will be decoded based on packet_type
 }
 
 class DataFlitLoad extends FlitLoad {

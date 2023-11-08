@@ -18,8 +18,34 @@ object NetworkConfig {
   }
 }
 
+object SystemConfig {
+  // each task belongs to a user; a user could own multiple tasks
+  // user id should be used for key indexing
+  // task id should be used in most other situation
+  val max_users = 32
+  val max_tasks = max_users
+  
+}
+
 // the address of a router
 class Coordinate extends Bundle {
   val x = UInt(log2Ceil(NetworkConfig.columns).W)
   val y = UInt(log2Ceil(NetworkConfig.rows).W)
+}
+
+object Util {
+  def getPaddingString(num: BigInt, length: Int): String = {
+    val numString = num.toString(2)
+    val paddingLength = length - numString.length
+    if (paddingLength <= 0) {
+      "" // No need to extend
+    } else {
+      "0" * paddingLength
+    }
+  }
+
+  // convert a BigInt into binary string, with padding zeros to a given length
+  def wrapWithPadding0(num: BigInt, length: Int): String = {
+    getPaddingString(num, length) + num.toString(2)
+  }
 }

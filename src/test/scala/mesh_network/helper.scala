@@ -7,43 +7,35 @@ import java.math.BigInteger
 
 object helper {
 
-  def getPaddingString(num: BigInt, length: Int): String = {
-    val numString = num.toString(2)
-    val paddingLength = length - numString.length
-    if (paddingLength <= 0) {
-      "" // No need to extend
-    } else {
-      "0" * paddingLength
-    }
-  }
-
   // poke router flit port, without ready-valid handshake
-  def pokeFlit(port: DecoupledIO[Flit], flit: soft_Flit, vc_id: Int)(implicit clk: Clock): Int = {
-    var cycle_spent = 0
+  def pokeFlit(port: DecoupledIO[Flit], flit: soft_Flit, vc_id: Int) = {
     // port.valid.poke(true)
     port.bits.header.flit_type.poke(flit.flit_type)
     port.bits.header.vc_id.poke(vc_id)
-    // TODO: handle flit load
+    // the diverse of headflit data is handled in toFlits methods instead of here.
     import NetworkConfig._
+    import SystemConfig._
+    import Util._
     flit.flit_type match {
       case FlitTypes.head | FlitTypes.single => {
-        val columns = log2Ceil(NetworkConfig.columns)
-        val rows = log2Ceil(NetworkConfig.rows)
-        val source_x = Integer.toBinaryString(flit.source._1)
-        val source_y = Integer.toBinaryString(flit.source._2)
-        val dest_x = Integer.toBinaryString(flit.dest._1)
-        val dest_y = Integer.toBinaryString(flit.dest._2)
-        val data = flit.load.toString(2)
-        val padding = getPaddingString(flit.load,
-                                       flit_load_width - 2 * columns - 2 * rows)
-        port.bits.load.poke(BigInt(source_x + source_y + 
-                                   dest_x + dest_y + padding + data, 2))
+        val columns_width = log2Ceil(columns)
+        val rows_width = log2Ceil(rows)
+        val source_x = wrapWithPadding0(flit.source._1, columns_width)
+        val source_y = wrapWithPadding0(flit.source._2, rows_width)
+        val dest_x = wrapWithPadding0(flit.dest._1, columns_width)
+        val dest_y = wrapWithPadding0(flit.dest._2, rows_width)
+        val packet_type = wrapWithPadding0(flit.packet_type, PacketTypes.getWidth)
+        val task_id = wrapWithPadding0(flit.task_id, log2Ceil(max_tasks))
+        val data = wrapWithPadding0(flit.load,
+                                    flit_load_width - 2 * columns_width - 2 * rows_width -
+                                    PacketTypes.getWidth - log2Ceil(max_tasks))
+        port.bits.load.poke(BigInt(source_x + source_y + dest_x + dest_y +
+                                   packet_type + task_id + data, 2))
       }
       case FlitTypes.body | FlitTypes.tail => {
         port.bits.load.poke(flit.load)
       }
     }
-    cycle_spent
   }
 
   def pokeVec[T <: Data](v: Vec[T], seq: Seq[T]) = {

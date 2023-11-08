@@ -193,21 +193,6 @@ class NetworkSpec extends AnyFreeSpec with ChiselScalatestTester {
       implicit val d = dut
       
       dut.clock.step(3)
-      // dut.io.local00.credit_in(0).poke(8)
-      // dut.io.local00.credit_in(1).poke(8)
-      // dut.io.local00.flit_out.ready.poke(true)
-      // dut.io.local01.credit_in(0).poke(8)
-      // dut.io.local01.credit_in(1).poke(8)
-      // dut.io.local01.flit_out.ready.poke(true)
-      // val pkt = new TestPacket(1, (1, 0), (0, 1), 2, Array(BigInt("F10D01A", 16), BigInt("F10D01B", 16)))
-      // var flits = pkt.toFlits
-      // while(!flits.isEmpty) {
-      //   val flit = flits.head
-      //   dut.io.local10.flit_in.valid.poke(true.B)
-      //   pokeFlit(dut.io.local10.flit_in, flit, 1)
-      //   flits = flits.tail
-      // }
-      // dut.clock.step(20)
       val para = new Simulator.SimulationPara(20, 0.5)
       val res = Simulator.simulate(para)
       Simulator.recordResults(res)

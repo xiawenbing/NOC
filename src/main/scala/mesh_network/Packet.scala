@@ -3,10 +3,33 @@ package mesh_network
 import chisel3._
 import chisel3.util._
 
+object PacketTypes extends ChiselEnum {
+  val packet_route = Value
+  val packet_cfg = Value
+  val packet_key = Value
+  val packet_data = Value
+  val packet_command = Value
+}
+
+abstract class HeadFlitData extends Bundle
+
+class RouteConfig extends HeadFlitData {
+  import SystemConfig._
+  // for now we only have unicast
+  val next_dest = new Coordinate
+}
+
+class DataPacket extends HeadFlitData {
+  // val packet_length = ???
+  val data = UInt((new HeadFlitLoad).getWidth.W)
+}
+
 // software version difinition of a flit for simulation usage
 class soft_Flit(val flit_type: FlitTypes.Type, 
                 val source: (Int, Int), 
-                val dest: (Int, Int), 
+                val dest: (Int, Int),
+                val packet_type: Int,
+                val task_id: Int,
                 val load: BigInt) {
 }
 
@@ -30,133 +53,39 @@ class TestPacket(packet_id: Int,
     }
 
     if(length == 1) {
-      flits = flits.appended(new soft_Flit(FlitTypes.single, source, dest, packet_id))
+      flits = flits.appended(new soft_Flit(FlitTypes.single, source, dest, 3, 1, packet_id))
     } else {
-      flits = flits.appended(new soft_Flit(FlitTypes.head, source, dest, packet_id))
+      flits = flits.appended(new soft_Flit(FlitTypes.head, source, dest, 3, 1, packet_id))
     }
 
     for(i <- 1 until length - 1) {
-      flits = flits.appended(new soft_Flit(FlitTypes.body, source, dest, flit_loads(i)))
+      flits = flits.appended(new soft_Flit(FlitTypes.body, source, dest, 3, 1, flit_loads(i)))
     }
 
     if(length > 1) {
-      flits = flits.appended(new soft_Flit(FlitTypes.tail, source, dest, flit_loads(length-1)))
+      flits = flits.appended(new soft_Flit(FlitTypes.tail, source, dest, 3, 1, flit_loads(length-1)))
     }
-
     flits
   }
 }
 
-// object PacketTypes extends ChiselEnum {
-//   val call = Value
-//   val empty = Value
-// }
+class soft_RouteConfigPacket(source: (Int, Int),
+                        dest: (Int, Int),
+                        task_id: Int,
+                        next_dest: (Int, Int)) extends soft_Packet {
+  override def toFlits: List[soft_Flit] = {
+    val next_dest_x = Util.wrapWithPadding0(next_dest._1, log2Ceil(NetworkConfig.columns))
+    val next_dest_y = Util.wrapWithPadding0(next_dest._2, log2Ceil(NetworkConfig.rows))
+    val data = BigInt(next_dest_x + next_dest_y, 2)
+    val flit = new soft_Flit(FlitTypes.single, source, dest, 0, task_id, data)
+    List(flit)
+  }
+}
 
-// class PacketHeader extends Bundle {
-//   val packet_type = PacketTypes()
-//   val source = new Coordinate
-//   val dest = new Coordinate
-// }
-
-// abstract class PacketLoad extends Bundle
-
-// class Packet extends Bundle {
-//   val header = new PacketHeader
-//   val load = Bits(NetworkConfig.load_width.W)
-// }
-
-// class CallPacket extends PacketLoad {
-//   class data extends Bundle {
-//     val addr = UInt(NetworkConfig.addr_width.W)
-//     val data_length = UInt(NetworkConfig.data_length_width.W)
-//   }
-//   val work_id = UInt(10.W)
-//   val inputs = UInt(3.W)
-//   val outputs = UInt(3.W)
-//   val all_data = Vec(5, new data)
-  
-// }
-
-// class EmptyPacket extends PacketLoad {
-//   val ranodm = UInt(8.W)
-//   val tail = UInt((96 - 8).W)
-// }
-
-// class PacketDecoder extends Module {
-//   val io = IO(new Bundle {
-//     val pin = Input(new Packet())
-//     val call_Packet_out = Output(new CallPacket)
-//     val empty_pacakge_out = Output(new EmptyPacket)
-//   })
-
-//   io.call_Packet_out := 0.U.asTypeOf(new CallPacket)
-//   io.empty_pacakge_out := 0.U.asTypeOf(new EmptyPacket)
-
-//   import PacketTypes._
-//   switch(io.pin.header.packet_type) {
-//     is(call) {
-//       val callP = io.pin.load.asTypeOf(new CallPacket)
-//       io.call_Packet_out := callP
-//     }
-//     is(empty) {
-//       val emptyP = io.pin.load.asTypeOf(new EmptyPacket)
-//       io.empty_pacakge_out := emptyP
-//     }
-//   }
-// }
-
-// class DecoderSTM extends Module {
-//   val io = IO(new Bundle {
-//     val start = Input(Bool())
-//     val call_Packet_out = Output(new CallPacket)
-//     val empty_pacakge_out = Output(new EmptyPacket)
-//   })
-//   object state extends ChiselEnum {
-//     val idle = Value
-//     val send1 = Value
-//     val send2 = Value
-//   }
-//   val s = RegInit(state.idle)
-//   val d = Module(new PacketDecoder)
-
-//   d.io.pin := 0.U.asTypeOf(chiselTypeOf(d.io.pin))
-//   io.call_Packet_out := d.io.call_Packet_out
-//   io.empty_pacakge_out := d.io.empty_pacakge_out
-
-//   switch(s) {
-//     is(state.idle) {
-//       when(io.start) {
-//         s := state.send1
-//       }
-//     }
-//     is(state.send1) {
-//       d.io.pin.header.packet_type := PacketTypes.empty
-//       // can't use BundleLiterals here
-//       val eP = Wire(new EmptyPacket)
-//       eP.ranodm := BigInt("24", 16).U
-//       eP.tail := BigInt("FADE00DEAD", 16).U
-//       d.io.pin.load := eP.asTypeOf(UInt(96.W))
-//       s := state.send2
-//     }
-//     is(state.send2) {
-//       d.io.pin.header.packet_type := PacketTypes.call
-//       val cP = Wire(new CallPacket)
-//       cP.all_data.foreach{i => 
-//         i.addr := 0.U
-//         i.data_length := 0.U  
-//       }
-
-//       cP.work_id := BigInt("42", 16).U
-//       cP.inputs := 2.U
-//       cP.outputs := 1.U
-//       cP.all_data(0).addr := 11.U
-//       cP.all_data(0).data_length := 2.U
-//       cP.all_data(1).addr := 22.U
-//       cP.all_data(1).data_length := 1.U
-//       cP.all_data(2).addr := 33.U
-//       cP.all_data(2).data_length := 3.U
-//       d.io.pin.load := cP.asTypeOf(UInt(96.W))
-//       s := state.idle
-//     }
-//   }
-// }
+class soft_DataPacket(task_id: Int,
+                      data: BigInt = 0) extends soft_Packet {
+  override def toFlits: List[soft_Flit] = {
+    val flit = new soft_Flit(FlitTypes.single, (0, 0), (0, 0), 3, task_id, data)
+    List(flit)
+  }
+}

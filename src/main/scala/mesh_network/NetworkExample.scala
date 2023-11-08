@@ -15,7 +15,8 @@ import chisel3.util._
  */
 
 class NetworkExample extends Module {
-  // TODO: change NetworkExample's io to a collection
+  // TODO: change NetworkExample's io to a collection to support arbitary
+  // network size
   import NetworkConfig._
   val io = IO(new Bundle{
     val local00 = new RouterPort
@@ -62,4 +63,33 @@ class NetworkExample extends Module {
   io.local01 <> router01.io.local_port
   io.local10 <> router10.io.local_port
   io.local11 <> router11.io.local_port
+}
+
+class NetworkExampleWithNI extends Module {
+  import NetworkConfig._
+  val io = IO(new Bundle{
+    val local00 = new RouterPort
+    val local01 = new SchedulerPort
+    val local10 = new SchedulerPort
+    val local11 = new SchedulerPort
+  })
+  val network = Module(new NetworkExample)
+  val NI01 = Module(new NetworkInterface(0, 1))
+  val NI10 = Module(new NetworkInterface(1, 0))
+  val NI11 = Module(new NetworkInterface(1, 1))
+
+  def connectNI(r:RouterPort, ni: NetworkInterface, s: SchedulerPort) = {
+    r.credit_in := ni.io.router_port.credit_out
+    r.flit_in <> ni.io.router_port.flit_out
+    ni.io.router_port.credit_in := ni.io.router_port.credit_out
+    ni.io.router_port.flit_in <> r.flit_out
+    
+    ni.io.scheduler_port <> s
+  }
+
+  io.local00 <> network.io.local00
+  connectNI(network.io.local01, NI01, io.local01)
+  connectNI(network.io.local10, NI10, io.local10)
+  connectNI(network.io.local11, NI11, io.local11)
+
 }
