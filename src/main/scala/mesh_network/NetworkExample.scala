@@ -18,17 +18,20 @@ class NetworkExample extends Module {
   // TODO: change NetworkExample's io to a collection to support arbitary
   // network size
   import NetworkConfig._
+  require(rows >= 2 && columns >= 2)
   val io = IO(new Bundle{
-    val local00 = new RouterPort
-    val local01 = new RouterPort
-    val local10 = new RouterPort
-    val local11 = new RouterPort
+    // val local00 = new RouterPort
+    // val local01 = new RouterPort
+    // val local10 = new RouterPort
+    // val local11 = new RouterPort
+    val locals = Vec(nodes, new RouterPort)
   })
 
-  val router00 = Module(new Router(0, 0))
-  val router01 = Module(new Router(0, 1))
-  val router10 = Module(new Router(1, 0))
-  val router11 = Module(new Router(1, 1))
+  // val router00 = Module(new Router(0, 0))
+  // val router01 = Module(new Router(0, 1))
+  // val router10 = Module(new Router(1, 0))
+  // val router11 = Module(new Router(1, 1))
+  val routers = Util.genAddress.map{case (i, j) => Module(new Router(i, j))}
 
   def routerConnectNull(r: Router) = {
     r.io.north_port <> 0.U.asTypeOf(new RouterPort)
@@ -49,20 +52,38 @@ class NetworkExample extends Module {
     down.io.north_port.credit_in := up.io.south_port.credit_out
   }
 
-  routerConnectNull(router00)
-  routerConnectNull(router01)
-  routerConnectNull(router10)
-  routerConnectNull(router11)
+  // routerConnectNull(router00)
+  // routerConnectNull(router01)
+  // routerConnectNull(router10)
+  // routerConnectNull(router11)
+  routers.foreach(r => routerConnectNull(r))
 
-  routerConnectRow(router00, router10)
-  routerConnectRow(router01, router11)
-  routerConnectCol(router01, router00)
-  routerConnectCol(router11, router10)
+  (0 until columns - 1).foreach(x => 
+    (0 until rows).foreach(y => 
+      routerConnectRow(routers(coordinate2Idx(x, y)),
+                       routers(coordinate2Idx(x + 1, y)))
+    )
+  )
 
-  io.local00 <> router00.io.local_port
-  io.local01 <> router01.io.local_port
-  io.local10 <> router10.io.local_port
-  io.local11 <> router11.io.local_port
+  (0 until rows - 1).foreach(y =>
+    (0 until columns).foreach(x =>
+      routerConnectCol(routers(coordinate2Idx(x, y + 1)),
+                       routers(coordinate2Idx(x, y)))
+    )
+  )
+
+  // routerConnectRow(router00, router10)
+  // routerConnectRow(router01, router11)
+  // routerConnectCol(router01, router00)
+  // routerConnectCol(router11, router10)
+
+  // io.local00 <> router00.io.local_port
+  // io.local01 <> router01.io.local_port
+  // io.local10 <> router10.io.local_port
+  // io.local11 <> router11.io.local_port
+  io.locals.zip(routers).foreach{case(p, r) =>
+    p <> r.io.local_port
+  }
 }
 
 class NetworkExampleWithNI extends Module {
@@ -87,9 +108,9 @@ class NetworkExampleWithNI extends Module {
     ni.io.scheduler_port <> s
   }
 
-  io.local00 <> network.io.local00
-  connectNI(network.io.local01, NI01, io.local01)
-  connectNI(network.io.local10, NI10, io.local10)
-  connectNI(network.io.local11, NI11, io.local11)
+  // io.local00 <> network.io.local00
+  // connectNI(network.io.local01, NI01, io.local01)
+  // connectNI(network.io.local10, NI10, io.local10)
+  // connectNI(network.io.local11, NI11, io.local11)
 
 }

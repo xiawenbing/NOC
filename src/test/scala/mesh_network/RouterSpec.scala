@@ -26,72 +26,72 @@ class NetworkExampleTop extends Module {
   val network = Module(new NetworkExample)
   val STM = RegInit(idle)
 
-  network.io.local00 <> 0.U.asTypeOf(new RouterPort)
-  network.io.local01 <> 0.U.asTypeOf(new RouterPort)
-  network.io.local10 <> 0.U.asTypeOf(new RouterPort)
-  network.io.local11 <> 0.U.asTypeOf(new RouterPort)
+  // network.io.local00 <> 0.U.asTypeOf(new RouterPort)
+  // network.io.local01 <> 0.U.asTypeOf(new RouterPort)
+  // network.io.local10 <> 0.U.asTypeOf(new RouterPort)
+  // network.io.local11 <> 0.U.asTypeOf(new RouterPort)
 
-  io.local00_flit_out <> network.io.local00.flit_out
-  io.local01_flit_out <> network.io.local01.flit_out
-  io.local10_flit_out <> network.io.local10.flit_out
-  io.local11_flit_out <> network.io.local11.flit_out
+  // io.local00_flit_out <> network.io.local00.flit_out
+  // io.local01_flit_out <> network.io.local01.flit_out
+  // io.local10_flit_out <> network.io.local10.flit_out
+  // io.local11_flit_out <> network.io.local11.flit_out
 
-  network.io.local11.credit_in(0) := 8.U
-  network.io.local11.credit_in(1) := 8.U
+  // network.io.local11.credit_in(0) := 8.U
+  // network.io.local11.credit_in(1) := 8.U
 
-  switch(STM) {
-    is(idle) {
-      when(io.start) {
-        STM := feed1
-      }
-    }
-    is(feed1) {
-      network.io.local00.flit_in.valid := true.B
-      network.io.local00.flit_in.bits.header.flit_type := FlitTypes.head
-      network.io.local00.flit_in.bits.header.vc_id := 1.U
-      val load1 = Wire(new HeadFlitLoad)
-      load1.source.x := 0.U
-      load1.source.y := 0.U
-      load1.dest.x := 1.U
-      load1.dest.y := 1.U
-      load1.data := BigInt("F00D11A", 16).U
-      network.io.local00.flit_in.bits.load := load1.asTypeOf(UInt(flit_load_width.W))
+  // switch(STM) {
+  //   is(idle) {
+  //     when(io.start) {
+  //       STM := feed1
+  //     }
+  //   }
+  //   is(feed1) {
+  //     network.io.local00.flit_in.valid := true.B
+  //     network.io.local00.flit_in.bits.header.flit_type := FlitTypes.head
+  //     network.io.local00.flit_in.bits.header.vc_id := 1.U
+  //     val load1 = Wire(new HeadFlitLoad)
+  //     load1.source.x := 0.U
+  //     load1.source.y := 0.U
+  //     load1.dest.x := 1.U
+  //     load1.dest.y := 1.U
+  //     load1.data := BigInt("F00D11A", 16).U
+  //     network.io.local00.flit_in.bits.load := load1.asTypeOf(UInt(flit_load_width.W))
 
-      STM := feed2
-    }
-    is(feed2) {
-      network.io.local00.flit_in.valid := true.B
-      network.io.local00.flit_in.bits.header.flit_type := FlitTypes.body
-      network.io.local00.flit_in.bits.header.vc_id := 1.U
-      val load1 = Wire(new DataFlitLoad)
-      load1.data := BigInt("F00D11B", 16).U
-      network.io.local00.flit_in.bits.load := load1.asTypeOf(UInt(flit_load_width.W))
+  //     STM := feed2
+  //   }
+  //   is(feed2) {
+  //     network.io.local00.flit_in.valid := true.B
+  //     network.io.local00.flit_in.bits.header.flit_type := FlitTypes.body
+  //     network.io.local00.flit_in.bits.header.vc_id := 1.U
+  //     val load1 = Wire(new DataFlitLoad)
+  //     load1.data := BigInt("F00D11B", 16).U
+  //     network.io.local00.flit_in.bits.load := load1.asTypeOf(UInt(flit_load_width.W))
      
-      STM := feed3
-    }
-    is(feed3) {
-      network.io.local00.flit_in.valid := true.B
-      network.io.local00.flit_in.bits.header.flit_type := FlitTypes.tail
-      network.io.local00.flit_in.bits.header.vc_id := 1.U
-      val load1 = Wire(new DataFlitLoad)
-      load1.data := BigInt("F00D11C", 16).U
-      network.io.local00.flit_in.bits.load := load1.asTypeOf(UInt(flit_load_width.W))
+  //     STM := feed3
+  //   }
+  //   is(feed3) {
+  //     network.io.local00.flit_in.valid := true.B
+  //     network.io.local00.flit_in.bits.header.flit_type := FlitTypes.tail
+  //     network.io.local00.flit_in.bits.header.vc_id := 1.U
+  //     val load1 = Wire(new DataFlitLoad)
+  //     load1.data := BigInt("F00D11C", 16).U
+  //     network.io.local00.flit_in.bits.load := load1.asTypeOf(UInt(flit_load_width.W))
 
-      network.io.local10.flit_in.valid := true.B
-      network.io.local10.flit_in.bits.header.flit_type := FlitTypes.single
-      network.io.local10.flit_in.bits.header.vc_id := 1.U
-      val load2 = Wire(new HeadFlitLoad)
-      load2.source.x := 1.U
-      load2.source.y := 0.U
-      load2.dest.x := 1.U
-      load2.dest.y := 1.U
-      load2.data := BigInt("F10D11A", 16).U
-      network.io.local10.flit_in.bits.load := load2.asTypeOf(UInt(flit_load_width.W))
+  //     network.io.local10.flit_in.valid := true.B
+  //     network.io.local10.flit_in.bits.header.flit_type := FlitTypes.single
+  //     network.io.local10.flit_in.bits.header.vc_id := 1.U
+  //     val load2 = Wire(new HeadFlitLoad)
+  //     load2.source.x := 1.U
+  //     load2.source.y := 0.U
+  //     load2.dest.x := 1.U
+  //     load2.dest.y := 1.U
+  //     load2.data := BigInt("F10D11A", 16).U
+  //     network.io.local10.flit_in.bits.load := load2.asTypeOf(UInt(flit_load_width.W))
 
-      STM := ending
-    }
-    is(ending) {/* nothing to do */}
-  }
+  //     STM := ending
+  //   }
+  //   is(ending) {/* nothing to do */}
+  // }
 }
 
 class NetworkExampleSpec extends AnyFreeSpec with ChiselScalatestTester {

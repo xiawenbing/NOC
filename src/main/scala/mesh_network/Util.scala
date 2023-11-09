@@ -2,10 +2,12 @@ package mesh_network
 
 import chisel3._
 import chisel3.util._
+import scala.math.BigDecimal._
+import scala.math._
 
 object NetworkConfig {
-  val rows = 2
-  val columns = 2
+  val rows = 3
+  val columns = 3
   val nodes = rows * columns
   val virtual_channels = 2
   val flit_load_width = 128
@@ -15,6 +17,9 @@ object NetworkConfig {
     val x = idx / rows
     val y = idx % rows
     (x, y)
+  }
+  def coordinate2Idx(c: (Int, Int)): Int = c match {
+    case (x, y) => x * rows + y
   }
 }
 
@@ -47,5 +52,21 @@ object Util {
   // convert a BigInt into binary string, with padding zeros to a given length
   def wrapWithPadding0(num: BigInt, length: Int): String = {
     getPaddingString(num, length) + num.toString(2)
+  }
+
+  // generate a sequence of router address
+  def genAddress: Seq[(Int, Int)] = (0 until NetworkConfig.nodes).
+    map{NetworkConfig.idx2Coordinate(_)}
+
+    // scale: the decimal places to keep
+  def fixedPrecisionDouble(in: Double, scale: Int): Double = 
+    BigDecimal(in).setScale(scale, RoundingMode.HALF_UP).toDouble
+
+  // the distance between two routers (in hops)
+  def getDistance(src: (Int, Int), dest: (Int, Int)): Int = {
+    def abs(in: Int): Int = if(in > 0) in else -in
+    val abs_x = abs(src._1 - dest._1)
+    val abs_y = abs(src._2 - dest._2)
+    abs_x + abs_y
   }
 }
