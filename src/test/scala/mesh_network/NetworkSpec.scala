@@ -24,7 +24,8 @@ object Simulator {
   }
 
   class SimulationResults(val latency: List[(packetID, latency)],
-                          val distance: List[(packetID, distance)])
+                          val distance: List[(packetID, distance)],
+                          val buffer_util: ArraySeq[Double])
   
   // may or may not generate a packet based on injection rate
   def genPacket(id: Int, source: (Int, Int), injection_rate: Double, max_length: Int): Option[soft_Packet] = {
@@ -71,8 +72,10 @@ object Simulator {
     implicit val clk = d.clock
     // TODO: change NetworkExample's io to a collection
     val ports = /* ArraySeq(d.io.local00, d.io.local01, d.io.local10, d.io.local11) */ d.io.locals
+    val peeking_sigs = d.io.peeking_signals
     val injection_buffer: ArraySeq[List[soft_Flit]] = ArraySeq.fill(nodes)(Nil)
     val injection_vc: ArraySeq[Int] = ArraySeq.fill(nodes)(0) // paired with injection_buffer
+    val buffer_util: ArraySeq[Int] = ArraySeq.fill(nodes)(0) // record used buffer
     var packets_to_inject = p.num_packets
     var packet_id = 0
     var injection_time_distance: List[(Int, Int, Int)] = Nil // (id, timestamp, distance), the distance is represented in hops
@@ -85,7 +88,7 @@ object Simulator {
     // always ready to accept flits
     ports.foreach{port =>
       port.credit_in.foreach{credit =>
-        credit.poke(8.U)
+        credit.poke(buffer_depth.U)
       }
       port.flit_out.ready.poke(true)
     }
@@ -132,8 +135,9 @@ object Simulator {
           }
         }
       }
-      // receive packets
+      
       for(i <- 0 until nodes) {
+        // receive packets
         if(ports(i).flit_out.valid.peekBoolean()) {
           // suck a flit out in this cycle and record latency
           val f_type = ports(i).flit_out.bits.header.flit_type.peek()
@@ -151,6 +155,8 @@ object Simulator {
             }
           }
         }
+        // record buffer utilization
+        buffer_util(i) = buffer_util(i) + (buffer_depth * virtual_channels * 5 - peeking_sigs(i).free_buffers.peekInt().toInt)
       }
       // step forward
       d.clock.step()
@@ -166,7 +172,9 @@ object Simulator {
     simu_log.close()
     
     new SimulationResults(latency_per_hop.map{case(id, ltc, _) => (id, ltc)},
-                          injection_time_distance.map{case(id, _, dist) => (id, dist)})
+                          injection_time_distance.map{case(id, _, dist) => (id, dist)},
+                          buffer_util.map(n => (n * 100).toDouble / 
+                                               (buffer_depth * virtual_channels * 5 * overall_cycle).toDouble))
   }
 
   def recordResults(res: SimulationResults) = {
@@ -220,17 +228,25 @@ object Simulator {
       latencyDistanceWriter.write(s"${lat},${dis},${count}\n")
     }
     latencyDistanceWriter.close()
+
+    // record buffers utilization
+    val buffersUtilFile = new File("simu-out/buffers_util.txt")
+    val buffersUtilWriter = new BufferedWriter(new FileWriter(buffersUtilFile))
+    res.buffer_util.foreach{util => 
+      buffersUtilWriter.write(s"${Util.fixedPrecisionDouble(util, 2)} ")
+    }
+    buffersUtilWriter.close()
   }
 }
 
 class NetworkSpec extends AnyFreeSpec with ChiselScalatestTester {
   "simulator" in {
-    test(new NetworkExample).withAnnotations(Seq(VerilatorBackendAnnotation, WriteVcdAnnotation)) { dut =>
+    test(new NetworkExample(true)).withAnnotations(Seq(VerilatorBackendAnnotation/* , WriteVcdAnnotation */)) { dut =>
       implicit val clk = dut.clock
       implicit val d = dut
       
       dut.clock.step(3)
-      val para = new Simulator.SimulationPara(50, 0.5, 6)
+      val para = new Simulator.SimulationPara(50, 0.2, 6)
       val res = Simulator.simulate(para)
       Simulator.recordResults(res)
       dut.clock.step(3)

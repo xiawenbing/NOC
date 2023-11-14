@@ -6,8 +6,8 @@ import scala.math.BigDecimal._
 import scala.math._
 
 object NetworkConfig {
-  val rows = 3
-  val columns = 3
+  val rows = 2
+  val columns = 2
   val nodes = rows * columns
   val virtual_channels = 2
   val flit_load_width = 128

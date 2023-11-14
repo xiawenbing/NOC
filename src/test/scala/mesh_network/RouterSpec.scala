@@ -23,7 +23,7 @@ class NetworkExampleTop extends Module {
     val ending = Value
   }
   import state._
-  val network = Module(new NetworkExample)
+  val network = Module(new NetworkExample(true))
   val STM = RegInit(idle)
 
   // network.io.local00 <> 0.U.asTypeOf(new RouterPort)

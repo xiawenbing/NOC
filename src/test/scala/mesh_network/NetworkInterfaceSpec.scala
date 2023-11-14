@@ -40,7 +40,7 @@ class NetworkInterfaceSpec extends AnyFreeSpec with ChiselScalatestTester {
 
 class NetworkWithNISpec extends AnyFreeSpec with ChiselScalatestTester {
   "NetworkWithNI" in {
-    test(new NetworkExampleWithNI).withAnnotations(Seq(VerilatorBackendAnnotation, WriteVcdAnnotation)) { dut =>
+    test(new NetworkExampleWithNI(true)).withAnnotations(Seq(VerilatorBackendAnnotation, WriteVcdAnnotation)) { dut =>
       def enqFlit(port: DecoupledIO[Flit], flit: soft_Flit, vc_id: Int) = {
         port.valid.poke(true)
         helper.pokeFlit(port, flit, vc_id)
