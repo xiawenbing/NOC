@@ -49,7 +49,9 @@ plt.savefig('simu-out/latency_distance.png', bbox_inches='tight', pad_inches=0.0
 
 #################### RECORD BUFFERS UTILIZATION ####################
 
-buffersUtil = np.loadtxt('simu-out/buffers_util.txt').reshape(4, 4)
+buffersUtil = np.loadtxt('simu-out/buffers_util.txt')
+mSize = int(np.sqrt(buffersUtil.size))
+buffersUtil = buffersUtil.reshape(mSize, mSize)
 
 f, ax = plt.subplots()
 res = sns.heatmap(data = buffersUtil, annot=True, fmt='.2f', square=True, 
