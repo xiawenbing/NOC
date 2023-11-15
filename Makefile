@@ -15,4 +15,5 @@ simu-out/latency.png: simu-out/latency.csv
 	python draw.py
 
 simu-out/latency.csv:
+	mkdir simu-out/ -p
 	sbt --mem 4096 'testOnly mesh_network.NetworkSpec'

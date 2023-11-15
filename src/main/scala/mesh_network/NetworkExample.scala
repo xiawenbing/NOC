@@ -6,7 +6,7 @@ import chisel3.util._
 // peeking more data in simulation, one for each router
 class PeekingSignals extends Bundle {
   import NetworkConfig._
-  val free_buffers = UInt(log2Ceil(buffer_depth * virtual_channels * 5).W)
+  val free_buffers = UInt(log2Ceil(buffer_depth * virtual_channels * 5 + 1).W)
 }
 
 /*  
@@ -51,7 +51,7 @@ class NetworkExample(collect_data: Boolean) extends Module {
   }
   def connectPeekingSigs(r: Router, s: PeekingSignals) = {
     val all_ports = Seq(r.io.north_port, r.io.south_port, r.io.west_port, r.io.east_port, r.io.local_port)
-    s.free_buffers := all_ports.foldLeft(0.U)((num, rp) => num + rp.credit_out.reduce(_ + _))
+    s.free_buffers := all_ports.foldLeft(0.U)((num, rp) => num +& rp.credit_out.reduce(_ +& _))
   }
 
   routers.foreach(r => routerConnectNull(r))

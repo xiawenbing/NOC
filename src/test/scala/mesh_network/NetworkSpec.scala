@@ -241,12 +241,12 @@ object Simulator {
 
 class NetworkSpec extends AnyFreeSpec with ChiselScalatestTester {
   "simulator" in {
-    test(new NetworkExample(true)).withAnnotations(Seq(VerilatorBackendAnnotation/* , WriteVcdAnnotation */)) { dut =>
+    test(new NetworkExample(true)).withAnnotations(Seq(VerilatorBackendAnnotation , WriteVcdAnnotation)) { dut =>
       implicit val clk = dut.clock
       implicit val d = dut
       
       dut.clock.step(3)
-      val para = new Simulator.SimulationPara(50, 0.2, 6)
+      val para = new Simulator.SimulationPara(500, 0.5, 6)
       val res = Simulator.simulate(para)
       Simulator.recordResults(res)
       dut.clock.step(3)

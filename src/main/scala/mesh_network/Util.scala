@@ -6,12 +6,12 @@ import scala.math.BigDecimal._
 import scala.math._
 
 object NetworkConfig {
-  val rows = 2
-  val columns = 2
+  val rows = 4
+  val columns = 4
   val nodes = rows * columns
-  val virtual_channels = 2
+  val virtual_channels = 4
   val flit_load_width = 128
-  val buffer_depth = 8
+  val buffer_depth = 4
 
   def idx2Coordinate(idx: Int): (Int, Int) = {
     val x = idx / rows

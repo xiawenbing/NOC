@@ -49,13 +49,20 @@ plt.savefig('simu-out/latency_distance.png', bbox_inches='tight', pad_inches=0.0
 
 #################### RECORD BUFFERS UTILIZATION ####################
 
-buffersUtil = np.loadtxt('simu-out/buffers_util.txt').reshape(2, 2)
+buffersUtil = np.loadtxt('simu-out/buffers_util.txt').reshape(4, 4)
 
 f, ax = plt.subplots()
-sns.heatmap(data = buffersUtil, annot=True, fmt='.2f', square=True, 
-            cmap=sns.cubehelix_palette(start=.5, rot=-.5, as_cmap=True),
-            cbar_kws={"shrink": .7, 'label': 'Average Buffer Usage (%)', "pad": 0.02},
-            linewidths=.5, linecolor='white').invert_yaxis()
+res = sns.heatmap(data = buffersUtil, annot=True, fmt='.2f', square=True, 
+                  cmap=sns.cubehelix_palette(start=.5, rot=-.5, as_cmap=True),
+                  cbar_kws={"shrink": .7, 'label': 'Average Buffer Usage (%)', "pad": 0.02},
+                  linewidths=.5, linecolor='white')
+
+# Drawing the frame 
+for _, spine in res.spines.items(): 
+    spine.set_visible(True) 
+    spine.set_linewidth(1.5) 
+
+res.invert_yaxis()
 
 plt.xlabel('X')
 plt.ylabel('Y')
