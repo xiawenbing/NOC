@@ -56,7 +56,7 @@ buffersUtil = buffersUtil.reshape(mSize, mSize)
 f, ax = plt.subplots()
 res = sns.heatmap(data = buffersUtil, annot=True, fmt='.2f', square=True, 
                   cmap=sns.cubehelix_palette(start=.5, rot=-.5, as_cmap=True),
-                  cbar_kws={"shrink": .7, 'label': 'Average Buffer Usage (%)', "pad": 0.02},
+                  cbar_kws={"shrink": .7, 'label': 'Average Buffers Usage (%)', "pad": 0.02},
                   linewidths=.5, linecolor='white')
 
 # Drawing the frame 
@@ -71,3 +71,27 @@ plt.ylabel('Y')
 plt.title('Buffers Utilization Rate of Routers')
 
 plt.savefig('simu-out/buffers_util.png', bbox_inches='tight', pad_inches=0.05)
+
+#################### RECORD LINKS UTILIZATION ####################
+
+linksUtilDf = pd.read_csv('simu-out/links_util.csv')
+# data = linksUtilDf.groupby(['router','direction']).sum()
+data = linksUtilDf.pivot_table(index='direction', columns='router', values='util').replace(0.0, np.nan)
+
+fig, ax = plt.subplots(figsize=(15,6))
+res = sns.heatmap(data = data, annot=True, fmt='.2f', square=True, 
+                  cmap=sns.cubehelix_palette(start=.5, rot=-.5, as_cmap=True),
+                  cbar_kws={"shrink": .7, 'label': 'Links Usage (%)', "pad": 0.02},
+                  linewidths=.5, linecolor='white')
+# Drawing the frame 
+for _, spine in res.spines.items(): 
+    spine.set_visible(True) 
+    spine.set_linewidth(1.5) 
+
+res.invert_yaxis()
+
+plt.xlabel('Router')
+plt.ylabel('Direction')
+plt.title('Links Utilization Rate of Routers')
+
+plt.savefig('simu-out/links_util.png', bbox_inches='tight', pad_inches=0.05)

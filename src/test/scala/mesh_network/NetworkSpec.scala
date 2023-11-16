@@ -16,8 +16,9 @@ class NetworkSpec extends AnyFreeSpec with ChiselScalatestTester {
       implicit val d = dut
       
       dut.clock.step(3)
-      val para = new Simulator.SimulationPara(20,
-                      new HotSpotTraffic(0.5, 8, (0, 0)))
+      val traffic_pattern = new /* HotSpotTraffic(0.5, 8, (0, 0)) */ TornatoTraffic(0.5, 8)
+      val para = new Simulator.SimulationPara(500,
+                      traffic_pattern)
       val res = Simulator.simulate(para)
       Simulator.recordResults(res)
       dut.clock.step(3)

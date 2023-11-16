@@ -21,22 +21,8 @@ object Simulator {
 
   class SimulationResults(val latency: List[(packetID, latency)],
                           val distance: List[(packetID, distance)],
-                          val buffer_util: ArraySeq[Double])
-  
-  // may or may not generate a packet based on injection rate
-  def genPacket(id: Int, source: (Int, Int), injection_rate: Double, max_length: Int): Option[soft_Packet] = {
-    require(injection_rate > 0 || injection_rate <= 1)
-    import NetworkConfig._
-    if(Random.nextInt(100) < injection_rate * 100) {
-      var dest: (Int, Int) = (Random.nextInt(columns), Random.nextInt(rows))
-      while(dest == source) {
-        dest = (Random.nextInt(columns), Random.nextInt(rows))
-      }
-      Some(new TestPacket(id, source, dest, Random.nextInt(max_length) + 1))
-    } else {
-      None
-    }
-  }
+                          val buffer_util: ArraySeq[Double],
+                          val link_util: ArraySeq[ArraySeq[Double]])
 
   // peak the port and return a list of free VCs (only used when corresponding 
   // injection_buffer is empty)
@@ -71,6 +57,7 @@ object Simulator {
     val injection_buffer: ArraySeq[List[soft_Flit]] = ArraySeq.fill(nodes)(Nil)
     val injection_vc: ArraySeq[Int] = ArraySeq.fill(nodes)(0) // paired with injection_buffer
     val buffer_util: ArraySeq[Int] = ArraySeq.fill(nodes)(0) // record used buffer
+    val link_util: ArraySeq[ArraySeq[Int]] = ArraySeq.fill(nodes)(ArraySeq.fill(4)(0))
     var packets_to_inject = p.num_packets
     var packet_id = 0
     var injection_time_distance: List[(Int, Int, Int)] = Nil // (id, timestamp, distance), the distance is represented in hops
@@ -152,6 +139,14 @@ object Simulator {
         }
         // record buffer utilization
         buffer_util(i) = buffer_util(i) + (buffer_depth * virtual_channels * 5 - peeking_sigs(i).free_buffers.peekInt().toInt)
+        // record link utilization
+        (0 until 4).zip(Seq(peeking_sigs(i).north_out_used,
+                            peeking_sigs(i).south_out_used,
+                            peeking_sigs(i).west_out_used,
+                            peeking_sigs(i).east_out_used)).foreach{case(j, used) =>
+          if(used.peekBoolean()) 
+            link_util(i)(j) = link_util(i)(j) + 1
+        }
       }
       // step forward
       d.clock.step()
@@ -169,10 +164,14 @@ object Simulator {
     new SimulationResults(latency_per_hop.map{case(id, ltc, _) => (id, ltc)},
                           injection_time_distance.map{case(id, _, dist) => (id, dist)},
                           buffer_util.map(n => (n * 100).toDouble / 
-                                               (buffer_depth * virtual_channels * 5 * overall_cycle).toDouble))
+                                               (buffer_depth * virtual_channels * 5 * overall_cycle).toDouble),
+                          link_util.map(us => us.map(u => (u * 100).toDouble /
+                                                          overall_cycle.toDouble)))
   }
 
   def recordResults(res: SimulationResults) = {
+    import NetworkConfig._
+    import Util._
     // record packet latency
     val latencyFile = new File("simu-out/latency.csv")
     val latencyWriter = new BufferedWriter(new FileWriter(latencyFile))
@@ -228,8 +227,19 @@ object Simulator {
     val buffersUtilFile = new File("simu-out/buffers_util.txt")
     val buffersUtilWriter = new BufferedWriter(new FileWriter(buffersUtilFile))
     res.buffer_util.foreach{util => 
-      buffersUtilWriter.write(s"${Util.fixedPrecisionDouble(util, 2)} ")
+      buffersUtilWriter.write(s"${fixedPrecisionDouble(util, 2)} ")
     }
     buffersUtilWriter.close()
+
+    // record links utilization
+    val linksUtilFile = new File("simu-out/links_util.csv")
+    val linksUtilWriter = new BufferedWriter(new FileWriter(linksUtilFile))
+    linksUtilWriter.write("router,direction,util\n")
+    res.link_util.zip(0 until nodes).foreach{case(us, r) =>
+      us.zip(Seq("North", "South", "West", "East")).foreach{case(u, direction) =>
+        linksUtilWriter.write(s"${r},${direction},${fixedPrecisionDouble(u, 2)}\n")
+      }
+    }
+    linksUtilWriter.close()
   }
 }

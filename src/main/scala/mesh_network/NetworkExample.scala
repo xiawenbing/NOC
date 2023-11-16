@@ -7,6 +7,10 @@ import chisel3.util._
 class PeekingSignals extends Bundle {
   import NetworkConfig._
   val free_buffers = UInt(log2Ceil(buffer_depth * virtual_channels * 5 + 1).W)
+  val north_out_used = Bool()
+  val south_out_used = Bool()
+  val west_out_used = Bool()
+  val east_out_used = Bool()
 }
 
 /*  
@@ -30,7 +34,7 @@ class NetworkExample(collect_data: Boolean) extends Module {
   })
 
   val routers = Util.genAddress.map{case (i, j) => Module(new Router(i, j))}
-
+  
   def routerConnectNull(r: Router) = {
     r.io.north_port <> 0.U.asTypeOf(new RouterPort)
     r.io.south_port <> 0.U.asTypeOf(new RouterPort)
@@ -52,6 +56,10 @@ class NetworkExample(collect_data: Boolean) extends Module {
   def connectPeekingSigs(r: Router, s: PeekingSignals) = {
     val all_ports = Seq(r.io.north_port, r.io.south_port, r.io.west_port, r.io.east_port, r.io.local_port)
     s.free_buffers := all_ports.foldLeft(0.U)((num, rp) => num +& rp.credit_out.reduce(_ +& _))
+    s.north_out_used := r.io.north_port.flit_out.valid
+    s.south_out_used := r.io.south_port.flit_out.valid
+    s.west_out_used := r.io.west_port.flit_out.valid
+    s.east_out_used := r.io.east_port.flit_out.valid
   }
 
   routers.foreach(r => routerConnectNull(r))
