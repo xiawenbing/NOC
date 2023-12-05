@@ -69,13 +69,12 @@ class TornatoTraffic(injection_rate: Double,
 // TODO: support multiple hot spots
 class HotSpotTraffic(injection_rate: Double,
                      max_length: Int,
-                     hot_spot_node: (Int, Int)) extends TrafficPattern {
+                     hot_spot_nodes: List[(Int, Int)]) extends TrafficPattern {
   import NetworkConfig._
   require((injection_rate > 0 || injection_rate <= 1) && 
-          max_length >= 1 &&
-          hot_spot_node._1 < columns && hot_spot_node._2 < rows)
+          max_length >= 1)
   def genPacket(pkt_id: Int, source: (Int, Int)): Option[soft_Packet] = {
-    if(source == hot_spot_node && Random.nextInt(100) < injection_rate * 100) {
+    if(hot_spot_nodes.contains(source) && Random.nextInt(100) < injection_rate * 100) {
       var dest: (Int, Int) = (Random.nextInt(columns), Random.nextInt(rows))
       while(dest == source) {
         dest = (Random.nextInt(columns), Random.nextInt(rows))

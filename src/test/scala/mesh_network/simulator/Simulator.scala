@@ -9,6 +9,7 @@ import scala.collection.mutable.ArraySeq
 import scala.util.Random
 import java.io._
 
+// a simulator for network only (end node excluded)
 object Simulator {
 
   type latency = Int
@@ -23,28 +24,6 @@ object Simulator {
                           val distance: List[(packetID, distance)],
                           val buffer_util: ArraySeq[Double],
                           val link_util: ArraySeq[ArraySeq[Double]])
-
-  // peak the port and return a list of free VCs (only used when corresponding 
-  // injection_buffer is empty)
-  def freeVCs(p: RouterPort): List[Int] = {
-    var res: List[Int] = Nil
-    for(i <- 0 until NetworkConfig.virtual_channels) {
-      if(p.credit_out(i).peekInt() == NetworkConfig.buffer_depth) {
-        res = i :: res
-      }
-    }
-    res
-  }
-
-  // randomly pick a VC from freeVC list 
-  def pickVC(vcs: List[Int]): Int = {
-    val idx = Random.nextInt(vcs.length)
-    vcs(idx)
-  }
-
-  def extractPacketID(f: Flit): BigInt = {
-    f.load.peekInt()
-  }
 
   // simulate the network in a step-by-step manner
   // 

@@ -54,6 +54,9 @@ object Util {
     getPaddingString(num, length) + num.toString(2)
   }
 
+  // convert a "small" binary string to Int
+  def conv(s: String): Int = BigInt(s, 2).toInt
+
   // generate a sequence of router address
   def genAddress: Seq[(Int, Int)] = (0 until NetworkConfig.nodes).
     map{NetworkConfig.idx2Coordinate(_)}

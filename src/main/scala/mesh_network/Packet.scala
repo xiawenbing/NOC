@@ -26,10 +26,10 @@ class DataPacket extends HeadFlitData {
 
 // software version difinition of a flit for simulation usage
 class soft_Flit(val flit_type: FlitTypes.Type, 
-                val source: (Int, Int), 
-                val dest: (Int, Int),
-                val packet_type: Int,
-                val task_id: Int,
+                val source: (Int, Int),   //*
+                val dest: (Int, Int),     // *
+                val packet_type: Int,     // *
+                val task_id: Int,         // *
                 val load: BigInt) {
 }
 
@@ -82,6 +82,22 @@ class soft_RouteConfigPacket(source: (Int, Int),
   }
 }
 
+class soft_MemCtrlrPacket(source: (Int, Int),
+                          dest: (Int, Int),
+                          task_id: Int,
+                          r_or_w: Boolean,
+                          length: Int) extends soft_Packet {
+  override def toFlits: List[soft_Flit] = {
+    val rw = if(r_or_w) 1.toString else 0.toString
+    val length_str = BigInt(length).toString(2)
+    val data = BigInt(rw + length_str, 2)
+    val flit = new soft_Flit(FlitTypes.single, source, dest, 4, task_id, data)
+    List(flit)
+  }
+}
+
+
+// this is used for NI testing, the NI can handle the source and dest field
 class soft_DataPacket(task_id: Int,
                       data: BigInt = 0) extends soft_Packet {
   override def toFlits: List[soft_Flit] = {
