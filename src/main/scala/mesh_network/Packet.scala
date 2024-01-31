@@ -43,6 +43,7 @@ class TestPacket(packet_id: Int,
                  source: (Int, Int),
                  dest: (Int, Int),
                  length: Int, // in flits
+                 task_id:Int,
                  load: Array[BigInt] = Array(0)) extends soft_Packet {
   require(length > 0 && load.length <= length)
   override def toFlits: List[soft_Flit] = {
@@ -53,17 +54,17 @@ class TestPacket(packet_id: Int,
     }
 
     if(length == 1) {
-      flits = flits.appended(new soft_Flit(FlitTypes.single, source, dest, 3, 1, packet_id))
+      flits = flits.appended(new soft_Flit(FlitTypes.single, source, dest, 3, task_id, packet_id))
     } else {
-      flits = flits.appended(new soft_Flit(FlitTypes.head, source, dest, 3, 1, packet_id))
+      flits = flits.appended(new soft_Flit(FlitTypes.head, source, dest, 3, task_id, packet_id))
     }
 
     for(i <- 1 until length - 1) {
-      flits = flits.appended(new soft_Flit(FlitTypes.body, source, dest, 3, 1, flit_loads(i)))
+      flits = flits.appended(new soft_Flit(FlitTypes.body, source, dest, 3, task_id, flit_loads(i)))
     }
 
     if(length > 1) {
-      flits = flits.appended(new soft_Flit(FlitTypes.tail, source, dest, 3, 1, flit_loads(length-1)))
+      flits = flits.appended(new soft_Flit(FlitTypes.tail, source, dest, 3, task_id, flit_loads(length-1)))
     }
     flits
   }

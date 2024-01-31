@@ -67,7 +67,7 @@ class MemoryController extends EndNodeDevice {
       }
       case 3 /* data */ => {
         val flit = flits.head
-        new TestPacket(flit.load.toInt, flit.source, flit.dest, flits.length)
+        new TestPacket(flit.load.toInt, flit.source, flit.dest, 1,flits.length)
       }
       case 4 /* command */ => {
         require(flits.length == 1)

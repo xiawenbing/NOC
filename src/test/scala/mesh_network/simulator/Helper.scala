@@ -6,8 +6,18 @@ import chiseltest._
 import scala.util.Random
 import java.math.BigInteger
 import chisel3.internal.throwException
+import os.PathError
 
 object helper {
+
+//   class FlitHeader extends Bundle {
+//   val flit_type = FlitTypes()
+//   val vc_id = UInt(log2Ceil(NetworkConfig.virtual_channels).W)
+//   val ID = UInt(log2Ceil(SystemConfig.max_tasks).W)
+//   val priority = UInt(log2Ceil(NetworkConfig.priority_width).W)
+//   val currpackagelength = UInt(log2Ceil(NetworkConfig.currpackagelength_width).W)
+//   val tagpackalength = UInt(log2Ceil(NetworkConfig.tagpackagelenth_width).W)
+// }
 
   // poke router flit port, without ready-valid handshake
   def pokeFlit(port: DecoupledIO[Flit], flit: soft_Flit, vc_id: Int) = {
@@ -39,7 +49,42 @@ object helper {
       }
     }
   }
+  
 
+
+  def userpokeFlit(port: DecoupledIO[Flit], flit: soft_Flit, vc_id: Int,ID:Int,priority:Int,currPackagelength:Int,tagPackagelength:Int) = {
+
+    port.bits.header.flit_type.poke(flit.flit_type)
+    port.bits.header.vc_id.poke(vc_id)
+    port.bits.header.ID.poke(ID)
+    port.bits.header.priority.poke(priority)
+    port.bits.header.currpackagelength.poke(currPackagelength)
+    port.bits.header.tagpackalength.poke(tagPackagelength)   
+    // the diverse of headflit data is handled in toFlits methods instead of here.
+    import NetworkConfig._
+    import SystemConfig._
+    import Util._
+    flit.flit_type match {
+      case FlitTypes.head | FlitTypes.single => {
+        val columns_width = log2Ceil(columns)
+        val rows_width = log2Ceil(rows)
+        val source_x = wrapWithPadding0(flit.source._1, columns_width)
+        val source_y = wrapWithPadding0(flit.source._2, rows_width)
+        val dest_x = wrapWithPadding0(flit.dest._1, columns_width)
+        val dest_y = wrapWithPadding0(flit.dest._2, rows_width)
+        val packet_type = wrapWithPadding0(flit.packet_type, PacketTypes.getWidth)
+        val task_id = wrapWithPadding0(flit.task_id, log2Ceil(max_tasks))
+        val data = wrapWithPadding0(flit.load,
+                                    flit_load_width - 2 * columns_width - 2 * rows_width -
+                                    PacketTypes.getWidth - log2Ceil(max_tasks))
+        port.bits.load.poke(BigInt(source_x + source_y + dest_x + dest_y +
+                                   packet_type + task_id + data, 2))
+      }
+      case FlitTypes.body | FlitTypes.tail => {
+        port.bits.load.poke(flit.load)
+      }
+    }
+  }
   // peek a flit port and convert it back to soft_Flit
   def peekFlit(port: DecoupledIO[Flit]): (Int, soft_Flit) = {
     import Util._
@@ -142,5 +187,4 @@ object helper {
     require(seqvec.map(_.length == d.bits.length).reduce(_ & _))
     seqvec.foreach(seq => enqueueVec(d, seq))
   }
-
 }

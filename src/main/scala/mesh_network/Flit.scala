@@ -13,9 +13,14 @@ object FlitTypes extends ChiselEnum {
 class FlitHeader extends Bundle {
   val flit_type = FlitTypes()
   val vc_id = UInt(log2Ceil(NetworkConfig.virtual_channels).W)
+  val ID = UInt(log2Ceil(SystemConfig.max_users).W)
+  val priority = UInt(log2Ceil(NetworkConfig.priority_width).W)
+  val currpackagelength = UInt(log2Ceil(NetworkConfig.currpackagelength_width).W)
+  val tagpackalength = UInt(log2Ceil(NetworkConfig.tagpackagelenth_width).W)
 }
 
-abstract class FlitLoad extends Bundle
+abstract class FlitLoad extends Bundle 
+
 
 class HeadFlitLoad extends FlitLoad {
   import NetworkConfig._
@@ -28,6 +33,7 @@ class HeadFlitLoad extends FlitLoad {
   val data = Bits(data_width.W) // this field will be decoded based on packet_type
 }
 
+
 class DataFlitLoad extends FlitLoad {
   val data = Bits(NetworkConfig.flit_load_width.W)
 }
@@ -36,3 +42,21 @@ class Flit extends Bundle {
   val header = new FlitHeader
   val load = Bits(NetworkConfig.flit_load_width.W)
 }
+
+class Flit_head extends Bundle {
+  val header = new FlitHeader
+}
+
+class operterBundle extends  Bundle {
+  import NetworkConfig._
+    val tagpackalength = UInt(log2Ceil(SystemConfig.max_tasks).W)
+    val currlength = UInt(log2Ceil(NetworkConfig.priority_width).W)
+    val ID = UInt(log2Ceil(NetworkConfig.tagpackagelenth_width).W)
+    def data_width: Int = flit_load_width - tagpackalength.getWidth - 
+                        currlength.getWidth - ID.getWidth
+    val data = UInt(data_width.W)
+}
+
+
+
+

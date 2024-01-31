@@ -41,7 +41,7 @@ class UniformTraffic(injection_rate: Double,
       while(dest == source) {
         dest = (Random.nextInt(columns), Random.nextInt(rows))
       }
-      Some(new TestPacket(pkt_id, source, dest, Random.nextInt(max_length) + 1))
+      Some(new TestPacket(pkt_id, source, dest, 1,Random.nextInt(max_length) + 1))
     } else {
       None
     }
@@ -59,7 +59,7 @@ class TornatoTraffic(injection_rate: Double,
       val dest_x: Int = (source._1 + (columns / 2 - 1)) % columns
       val dest_y: Int = (source._2 + (rows / 2 - 1)) % rows
       var dest: (Int, Int) = (dest_x, dest_y)
-      Some(new TestPacket(pkt_id, source, dest, Random.nextInt(max_length) + 1))
+      Some(new TestPacket(pkt_id, source, dest, 1,Random.nextInt(max_length) + 1))
     } else {
       None
     }
@@ -79,7 +79,7 @@ class HotSpotTraffic(injection_rate: Double,
       while(dest == source) {
         dest = (Random.nextInt(columns), Random.nextInt(rows))
       }
-      Some(new TestPacket(pkt_id, source, dest, Random.nextInt(max_length) + 1))
+      Some(new TestPacket(pkt_id, source, dest, 1,Random.nextInt(max_length) + 1))
     } else {
       None
     }

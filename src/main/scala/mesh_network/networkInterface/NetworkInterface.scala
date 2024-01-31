@@ -10,6 +10,7 @@ class SchedulerPort extends Bundle {
   // such as virtual channels, src and dest.
   // assumes that a packet will come in order
   val flit_in = Flipped(Decoupled(new Flit))
+
 }
 
 //  ------       ----       -----------
@@ -81,6 +82,12 @@ class NetworkInterface(x: Int, y: Int) extends Module {
         val flitHeader = Wire(new FlitHeader)
         flitHeader.flit_type := io.scheduler_port.flit_in.bits.header.flit_type
         flitHeader.vc_id := vcQueue.io.deq.bits
+
+        flitHeader.ID:=io.scheduler_port.flit_in.bits.header.ID
+        flitHeader.currpackagelength:=io.scheduler_port.flit_in.bits.header.currpackagelength
+        flitHeader.tagpackalength:=io.scheduler_port.flit_in.bits.header.tagpackalength
+        flitHeader.priority:=io.scheduler_port.flit_in.bits.header.priority
+
         vcQueue.io.deq.ready := true.B
         vcReg := vcQueue.io.deq.bits
         
@@ -99,6 +106,7 @@ class NetworkInterface(x: Int, y: Int) extends Module {
       when(io.scheduler_port.flit_in.fire) {
         io.router_port.flit_out.valid := true.B
         io.router_port.flit_out.bits := io.scheduler_port.flit_in.bits
+        io.router_port.flit_out.bits.header.vc_id := vcReg
         when(io.scheduler_port.flit_in.bits.header.flit_type === FlitTypes.tail) {
           sendingSTM := idle
           tailJustLeave(vcReg) := true.B

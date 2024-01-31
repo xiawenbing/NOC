@@ -6,13 +6,18 @@ import scala.math.BigDecimal._
 import scala.math._
 
 object NetworkConfig {
-  val rows = 4
-  val columns = 4
+  val rows = 3
+  val columns = 3
   val nodes = rows * columns
   val virtual_channels = 4
   val flit_load_width = 128
   val buffer_depth = 4
 
+  val task_id_with = 4
+  val currpackagelength_width = 16
+  val tagpackagelenth_width = 16
+  val priority_width = 4
+  val finishpacklength_width = 16
   def idx2Coordinate(idx: Int): (Int, Int) = {
     val x = idx / rows
     val y = idx % rows
@@ -27,8 +32,8 @@ object SystemConfig {
   // each task belongs to a user; a user could own multiple tasks
   // user id should be used for key indexing
   // task id should be used in most other situation
-  val max_users = 32
-  val max_tasks = max_users
+  val max_users = 8
+  val max_tasks = 4
   
 }
 
