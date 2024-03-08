@@ -267,6 +267,7 @@ class top_muliv extends AnyFlatSpec with ChiselScalatestTester {
         dut.clock.step()
         port.valid.poke(false)
       }
+
         val flit1s = new TestPacket(1,(0,0),(0,1),3,1,
         load=Array(BigInt("0011010101",2),BigInt("0f0e0d0c0b0a09080706050403020100",16),BigInt("0f0e0d0c0b0a09080706050403020100",16))).toFlits  
         val flit2s = new TestPacket(1,(0,0),(0,1),3,2,
@@ -292,10 +293,8 @@ class top_muliv extends AnyFlatSpec with ChiselScalatestTester {
       dut.io.inputs(0).valid.poke(false)
       dut.io.inputs(1).valid.poke(false) 
       dut.clock.step()  
-
       dut.io.output.ready.poke(true)
       dut.clock.step(110000)
-      
     }
   }
 }

@@ -33,7 +33,7 @@ class test_transmitDatapotaddsup(cfglen:Int,keylen:Int,datalen:Int,resultlen:Int
 
     io.NetworkInterfaceuserIn.ready:=InterfaceuserinrdyReg
     io.NetworkInterfaceuserOUT.valid:=InterfaceuseroutvldReg
- 
+
 
 
     //PCB表
