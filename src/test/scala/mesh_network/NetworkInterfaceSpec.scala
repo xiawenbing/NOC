@@ -357,10 +357,13 @@ class NetworkWithNISpec_test extends AnyFreeSpec with ChiselScalatestTester {
         println(s"结束while循环 sm4pagenum:${sm4pagenum} sm3pagenum:${sm3pagenum},sm4pagenum:${sm3pagenum},mulivpagenum:${mulivpagenum} ")
         println(s"时间检测 sm4resources:${sm4resources}  sm3resources:${sm3resources}  potresources:${potresources} mulivresources:${mulivresources} ")
         dut.clock.step(200000)
+        
 
     }
   }
 }
+
+
 
 
 

@@ -142,8 +142,6 @@ class  PcbReg extends Bundle{
     val finishpacklength = UInt(log2Ceil(NetworkConfig.finishpacklength_width).W)  //表示已经处理的Flit个数
     val config = UInt(128.W)
     val runned = Bool() //是否已经运行过
-
-
 }
 
 class SM4Pcb extends Bundle{

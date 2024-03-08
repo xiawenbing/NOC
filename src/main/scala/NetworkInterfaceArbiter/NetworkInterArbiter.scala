@@ -18,7 +18,6 @@ class networkModule0(inPorts:Int) extends Module{
     queues_ports.zip(queues).foreach{case(m, n) =>
         m<>n.io
     }
-
     //仲裁器:若优先级相同则采用RR仲裁器仲裁通道
     val arbiters = Seq.fill(4)(Module(new RRArbiter(UInt(0.W),inPorts)))
     val arbiterrdyReg = RegInit(VecInit.fill(4)(true.B))

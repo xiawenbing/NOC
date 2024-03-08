@@ -16,6 +16,7 @@ class test_transmitDataSM3(cfglen:Int,keylen:Int,datalen:Int,resultlen:Int) exte
     DataInRdyReg : 寄存器与输入io的ready信号连接
     DataOutVldReg ： 寄存器与输出io的valid 信号连接
     */ 
+    
     val InterfaceDataInrdyReg = RegInit(true.B)
     val InterfaceDataOutvldReg=RegInit(false.B)
 

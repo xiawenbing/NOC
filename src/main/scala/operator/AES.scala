@@ -19,7 +19,6 @@ class AES extends Module{
     io.DataOut.valid:=DataOutVldReg
     val cfwDataReg = RegInit(0.U.asTypeOf(new AesSm4RegBundle))
 
-
     //密钥扩展计数器
     val ketcntReg = RegInit(30.U(8.W))
     //加解密计数器

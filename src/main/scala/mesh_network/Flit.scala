@@ -11,12 +11,12 @@ object FlitTypes extends ChiselEnum {
 }
 
 class FlitHeader extends Bundle {
-  val flit_type = FlitTypes()
-  val vc_id = UInt(log2Ceil(NetworkConfig.virtual_channels).W)
-  val ID = UInt(log2Ceil(SystemConfig.max_users).W)
-  val priority = UInt(log2Ceil(NetworkConfig.priority_width).W)
-  val currpackagelength = UInt(log2Ceil(NetworkConfig.currpackagelength_width).W)
-  val tagpackalength = UInt(log2Ceil(NetworkConfig.tagpackagelenth_width).W)
+  val flit_type = FlitTypes()  //2bit
+  val vc_id = UInt(log2Ceil(NetworkConfig.virtual_channels).W) //2bit
+  val ID = UInt(log2Ceil(SystemConfig.max_users).W)  //3bit  ->2bit
+  val priority = UInt(log2Ceil(NetworkConfig.priority_width).W) //2bit
+  val currpackagelength = UInt(log2Ceil(NetworkConfig.currpackagelength_width).W) //4bit
+  val tagpackalength = UInt(log2Ceil(NetworkConfig.tagpackagelenth_width).W) //4bit
 }
 
 abstract class FlitLoad extends Bundle 

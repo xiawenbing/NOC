@@ -271,7 +271,7 @@ class test_transmitData1(cfglen:Int,keylen:Int,datalen:Int,resultlen:Int) extend
                                                          _.cfg_len ->cfglen.U,
                                                          _.result_len->resultlen.U))
 
-
+    
     //输出数据寄存器
     val DataOutReg = RegInit(0.U.asTypeOf(new test_UnifyfieldReg))
 
@@ -721,7 +721,7 @@ class Centralcontrol extends Module{
         when(userInfomationRegs(io.NetworkInterfaceuserIn.bits.ID).valid){
             userInfomationRegs((io.NetworkInterfaceuserIn.bits.ID)).currpacklength:=userInfomationRegs((io.NetworkInterfaceuserIn.bits.ID)).currpacklength+2.U
         }.elsewhen(userInfomationRegs(io.NetworkInterfaceuserIn.bits.ID).valid === false.B){
-            //保存任务pcb表
+            //保存任务Tcb表
             userInfomationRegs(io.NetworkInterfaceuserIn.bits.ID).ID:=io.NetworkInterfaceuserIn.bits.ID
             userInfomationRegs(io.NetworkInterfaceuserIn.bits.ID).MemInfo:=io.NetworkInterfaceuserIn.bits.ID
             userInfomationRegs(io.NetworkInterfaceuserIn.bits.ID).tagpacklength:=io.NetworkInterfaceuserIn.bits.tagpacklength
@@ -802,6 +802,7 @@ class Centralcontrol extends Module{
                 }
             }
         }
+        
         is(loaduserID){
             //将用户号已传输进去
             when(io.NetworkInterfaceuserOUT.fire){
@@ -851,7 +852,7 @@ class Centralcontrol extends Module{
 /*******************************************************************************************************************************/
 /*******************************************************************************************************************************/
 
-class test_transmitData2(cfglen:Int,keylen:Int,datalen:Int,resultlen:Int) extends  Module {
+class test_transmitData2(cfglen:Int,keylen:Int,datalen:Int,resultlen:Int) extends Module {
     val io = IO(new test_InterfaceCCBundle)
      /*
     InterfaceDataInrdyReg:寄存器与输入io的ready信号连接
@@ -899,7 +900,6 @@ class test_transmitData2(cfglen:Int,keylen:Int,datalen:Int,resultlen:Int) extend
         }
     }
 
-    //缓冲配置数据
     val configReg = RegInit((new configlenRegBundle).Lit(_.data_len -> datalen.U,
                                                          _.key_len -> keylen.U,
                                                          _.cfg_len ->cfglen.U,

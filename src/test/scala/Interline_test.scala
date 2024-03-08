@@ -309,7 +309,6 @@ class Top_SM3CCnetworkadaptortest extends AnyFlatSpec with ChiselScalatestTester
       dut.clock.step()
       dut.io.output.ready.poke(true)
       dut.clock.step(1000)
-
      }
     }
 }

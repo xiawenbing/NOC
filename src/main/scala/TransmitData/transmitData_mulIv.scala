@@ -25,7 +25,6 @@ class test_transmitDatamuliv(cfglen:Int,keylen:Int,datalen:Int,resultlen:Int) ex
     val InterfaceuserinrdyReg = RegInit(true.B) 
     val InterfaceuseroutvldReg = RegInit(false.B)  //将user信息传送给调度模块
 
-
     val runnedReg = RegInit(false.B)
 
     io.NetworkInterfaceDataIN.ready:=InterfaceDataInrdyReg
